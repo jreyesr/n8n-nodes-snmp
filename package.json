@@ -1,6 +1,6 @@
 {
     "name": "n8n-nodes-snmp",
-    "version": "0.1.0",
+    "version": "0.0.1",
     "description": "A n8n node that allows communication with SNMP-enabled devices",
     "license": "MIT",
     "homepage": "https://github.com/jreyesr/n8n-nodes-snmp",
