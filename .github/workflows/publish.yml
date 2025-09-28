@@ -24,4 +24,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build --if-present
-      - run: npm run release
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          RELEASE_MODE: "true" # secret escape hatch because otherwise node-cli tries to do a bunch of things that seem to be more geared towards local publishing than GH Actions
