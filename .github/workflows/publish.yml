@@ -19,7 +19,7 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
-      - run: npm install --global pnpm only-allow
+      - run: npm install --global pnpm only-allow npm@latest
       - run: npm install --global @n8n/node-cli
       - run: npm ci
       - run: npm run lint
