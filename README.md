@@ -3,8 +3,7 @@
 This is an n8n community node. It lets you access SNMP-enabled devices in your n8n workflows.
 
 SNPM is a network management protocol that is widely used to monitor and control network devices (e.g. routers and
-switches),
-as well as other network-connected devices such as servers, IP phones and printers.
+switches), as well as other network-connected devices such as servers, IP phones and printers.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
@@ -33,7 +32,15 @@ By default, this operation walks the subtree rooted at SNMPv2-SMI::mib-2 (`1.3.6
 for example, any vendor-specific fields (which may be under `1.3.6.1.4.1`, the Private Enterprises section). This can be
 configured with the advanced option **Root OID**.
 
+### Get Values
 
+Reads one or multiple OIDs. Static OIDs (or expressions that resolve to a single OID) can be written in the OIDs list.
+
+If you need to read a variable list of OIDs (where the number of items isn't known and comes from an expression), add
+an item to the list of OIDs and write an expression that resolves to an array. The node supports a mix of single and
+multiple OIDs:
+
+![a screenshot of the SNMP node showing the Read OIDs operation with an array on the field for the OIDs to read](images/get_array.png)
 
 ## Credentials
 

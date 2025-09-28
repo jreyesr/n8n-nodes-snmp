@@ -8,7 +8,7 @@ import { NodeConnectionTypes } from 'n8n-workflow';
 import { list, options as listOptions } from './operations/list';
 import { get, properties as getProperties } from './operations/get';
 
-export class SNMP implements INodeType {
+export class Snmp implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'SNMP',
 		name: 'snmp',
