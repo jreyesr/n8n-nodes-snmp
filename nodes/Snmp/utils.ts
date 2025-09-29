@@ -1,4 +1,4 @@
-import { IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
+import { IExecuteFunctions, ILoadOptionsFunctions, NodeOperationError } from 'n8n-workflow';
 import {
 	createSession,
 	isVarbindError,
@@ -8,20 +8,15 @@ import {
 	OidFormat,
 } from 'net-snmp';
 
-export function connect(this: IExecuteFunctions, itemIndex: number) {
-	const ip = this.getNodeParameter('address', itemIndex, '') as string;
-	const port = this.getNodeParameter('port', itemIndex, 161) as number;
-
+export function connect(ip: string, port: number) {
 	return createSession(ip, 'private', {
 		port,
 	});
 }
 
-export function getSingle(this: IExecuteFunctions, itemIndex: number, varbind: Varbind) {
+export function getSingle(this: IExecuteFunctions | ILoadOptionsFunctions, varbind: Varbind) {
 	if (isVarbindError(varbind)) {
-		throw new NodeOperationError(this.getNode(), varbindError(varbind), {
-			itemIndex,
-		});
+		throw new NodeOperationError(this.getNode(), varbindError(varbind));
 	}
 	return getVal(varbind);
 }

@@ -1,24 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
-   width="24"
-   height="24"
-   viewBox="0 0 36.16293 27.090787"
-   fill="none"
-   stroke="#00008b"
-   stroke-width="2"
-   stroke-linecap="round"
-   stroke-linejoin="round"
-   class="feather feather-server"
+   width="40"
+   height="40"
+   viewBox="0 0 10.583333 10.583332"
    version="1.1"
-   id="svg8743"
-   sodipodi:docname="server.svg"
-   xml:space="preserve"
+   id="svg3456"
+   inkscape:export-filename="snmp.svg"
+   inkscape:export-xdpi="300"
+   inkscape:export-ydpi="300"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg"><defs
-     id="defs8747" /><sodipodi:namedview
-     id="namedview8745"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview3458"
      pagecolor="#ffffff"
      bordercolor="#666666"
      borderopacity="1.0"
@@ -26,58 +23,25 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     showgrid="false" /><rect
-     x="0.75"
-     y="16.340786"
-     width="10"
-     height="4"
-     rx="1"
-     ry="1"
-     id="rect8735"
-     style="stroke-width:1.5;stroke-dasharray:none" /><rect
-     x="0.75"
-     y="22.340786"
-     width="10"
-     height="4"
-     rx="1"
-     ry="1"
-     id="rect8737"
-     style="stroke-width:1.5;stroke-dasharray:none" /><line
-     x1="2.7500005"
-     y1="18.340786"
-     x2="2.7550006"
-     y2="18.340786"
-     id="line8739"
-     style="stroke-width:1.5;stroke-dasharray:none" /><line
-     x1="2.7500005"
-     y1="24.340784"
-     x2="2.7550006"
-     y2="24.340784"
-     id="line8741"
-     style="stroke-width:1.5;stroke-dasharray:none" /><g
-     style="fill:none;stroke:#00008b;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"
-     id="g9613"
-     transform="translate(0.3161521,-8.6990328)"><circle
-       cx="25.493296"
-       cy="12.699033"
-       r="3"
-       id="circle9594" /><circle
-       cx="11.588573"
-       cy="12.767055"
-       r="3"
-       id="circle9596" /><line
-       x1="22.493296"
-       y1="12.699033"
-       x2="14.588573"
-       y2="12.767055"
-       id="line9598" /><line
-       x1="34.846779"
-       y1="18.996361"
-       x2="28.424797"
-       y2="14.401705"
-       id="line9600" /><line
-       x1="8.5885725"
-       y1="12.767055"
-       x2="0.6838479"
-       y2="12.835076"
-       id="line10030" /></g></svg>
+     inkscape:document-units="mm"
+     showgrid="false" />
+  <defs
+     id="defs3453" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-119.91867,-153.52199)">
+    <text
+       xml:space="preserve"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.65562px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.237707;stroke-dasharray:none"
+       x="119.8817"
+       y="160.11871"
+       id="text3314"><tspan
+         sodipodi:role="line"
+         id="tspan3312"
+         x="119.8817"
+         y="160.11871"
+         style="stroke-width:0.237707;stroke-dasharray:none">SNMP</tspan></text>
+  </g>
+</svg>

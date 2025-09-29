@@ -1,10 +1,10 @@
-import type { IExecuteFunctions, INodeProperties } from 'n8n-workflow';
+import type { IExecuteFunctions, ILoadOptionsFunctions, INodeProperties } from 'n8n-workflow';
 import { connect, getName, getSingle } from '../utils';
-import { type Varbind, ObjectType } from 'net-snmp';
+import { type Varbind, ObjectType, Session } from 'net-snmp';
 
 export const properties: INodeProperties[] = [];
 
-const SNMPWALK_ROOT_OID = '1.3.6.1.2.1'; // SNMPv2-SMI::mib-2
+export const SNMPWALK_ROOT_OID = '1.3.6.1.2.1'; // SNMPv2-SMI::mib-2
 const SNMP_TYPE_NAMES: { [k in ObjectType]?: string } = {
 	[ObjectType.Boolean]: 'Boolean',
 	[ObjectType.Integer]: 'Integer',
@@ -40,17 +40,18 @@ export const options: INodeProperties[] = [
 	},
 ];
 
-export async function list(this: IExecuteFunctions, itemIndex: number) {
-	const startOID = this.getNodeParameter('options.rootOID', itemIndex, SNMPWALK_ROOT_OID) as string;
-	this.logger.debug('list', { rootOID: startOID });
-	const session = connect.call(this, itemIndex);
+export type TreeEntry = {
+	oid: string;
+	name: string;
+	type: { numeric: number | undefined; name: string };
+	value: ReturnType<typeof getSingle>;
+};
 
-	type TreeEntry = {
-		oid: string;
-		name: string;
-		type: { numeric: number | undefined; name: string };
-		value: ReturnType<typeof getSingle>;
-	};
+export async function listOIDs(
+	this: IExecuteFunctions | ILoadOptionsFunctions,
+	session: Session,
+	startOID: string = SNMPWALK_ROOT_OID,
+): Promise<TreeEntry[]> {
 	let resolve: (value: TreeEntry[]) => void, reject: (value: Error) => void;
 	const promise: Promise<TreeEntry[]> = new Promise((res, rej) => {
 		resolve = res;
@@ -78,7 +79,7 @@ export async function list(this: IExecuteFunctions, itemIndex: number) {
 					oid: vb.oid,
 					name: getName(vb.oid) ?? vb.oid,
 					type: { numeric: vb.type, name: SNMP_TYPE_NAMES[vb.type ?? -1] ?? 'UNKNOWN' },
-					value: getSingle.call(this, itemIndex, vb), // may throw NodeOperationError
+					value: getSingle.call(this, vb), // may throw NodeOperationError
 				});
 			}
 		} catch (e) {
@@ -92,3 +93,12 @@ export async function list(this: IExecuteFunctions, itemIndex: number) {
 	return promise;
 }
 
+export async function list(this: IExecuteFunctions, itemIndex: number) {
+	const startOID = this.getNodeParameter('options.rootOID', itemIndex, SNMPWALK_ROOT_OID) as string;
+	const ip = this.getNodeParameter('address', itemIndex, '') as string;
+	const port = this.getNodeParameter('port', itemIndex, 161) as number;
+	this.logger.debug('list', { rootOID: startOID });
+	const session = connect.call(this, ip, port);
+
+	return listOIDs.call(this, session, startOID);
+}

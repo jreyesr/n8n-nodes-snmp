@@ -7,6 +7,7 @@ import type {
 import { NodeConnectionTypes } from 'n8n-workflow';
 import { list, options as listOptions } from './operations/list';
 import { get, properties as getProperties } from './operations/get';
+import { listOIDsInDefaultTree } from './methods';
 
 export class Snmp implements INodeType {
 	description: INodeTypeDescription = {
@@ -72,6 +73,12 @@ export class Snmp implements INodeType {
 			},
 		],
 	};
+
+	methods: INodeType["methods"] = {
+		listSearch: {
+			listOIDsInDefaultTree: listOIDsInDefaultTree
+		}
+	}
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items: INodeExecutionData[] = [];

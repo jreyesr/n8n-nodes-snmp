@@ -23,9 +23,36 @@ export const properties: INodeProperties[] = [
 					{
 						displayName: 'OID',
 						name: 'oid',
-						type: 'string',
-						default: '',
+						type: 'resourceLocator',
+						default: { mode: 'oid', value: '' },
 						required: true,
+						modes: [
+							{
+								displayName: 'Select',
+								name: 'list',
+								type: 'list',
+								placeholder: 'Select an OID...',
+								typeOptions: {
+									searchListMethod: 'listOIDsInDefaultTree',
+									searchable: true,
+								},
+							},
+							{
+								displayName: 'By number',
+								name: 'oid',
+								type: 'string',
+								placeholder: 'e.g. 1.3.6.1.2.1',
+								validation: [
+									{
+										type: 'regex',
+										properties: {
+											regex: '\\d+(\\.\\d+)*',
+											errorMessage: 'Not a valid numeric OID',
+										},
+									},
+								],
+							},
+						],
 					},
 				],
 			},
@@ -39,17 +66,19 @@ export const properties: INodeProperties[] = [
 ];
 
 export async function get(this: IExecuteFunctions, itemIndex: number) {
-	const oids = this.getNodeParameter('oids.item', itemIndex, []) as { oid: string | string[] }[];
+	const oids = this.getNodeParameter('oids.item', itemIndex, []) as { oid: {value: string | string[]} }[];
+	const ip = this.getNodeParameter('address', itemIndex, '') as string;
+	const port = this.getNodeParameter('port', itemIndex, 161) as number;
 	this.logger.debug('get', { oids });
-	const session = connect.call(this, itemIndex);
+	const session = connect.call(this, ip, port);
 
 	const varbinds = await promisify(session.get).call(
 		session,
 		// NOTE: .flatMap() instead of .map() so it naturally handles expressions that resolve to arrays
-		oids.flatMap((i) => i.oid),
+		oids.flatMap((i) => i.oid.value),
 	);
 	return (varbinds ?? []).map((vb) => ({
 		oid: vb.oid,
-		value: getSingle.call(this, itemIndex, vb),
+		value: getSingle.call(this, vb),
 	}));
 }
