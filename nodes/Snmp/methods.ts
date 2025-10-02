@@ -9,7 +9,7 @@ export async function listOIDsInDefaultTree(
 	const ip = this.getNodeParameter('address', '') as string;
 	const port = this.getNodeParameter('port', 161) as number;
 
-	const session = connect.call(this, ip, port);
+	const session = await connect.call(this, ip, port);
 	const oids = await listOIDs.call(this, session);
 
 	return {

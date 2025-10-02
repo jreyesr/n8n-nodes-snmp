@@ -1,17 +1,75 @@
-import { IExecuteFunctions, ILoadOptionsFunctions, NodeOperationError } from 'n8n-workflow';
 import {
-	createSession,
-	isVarbindError,
-	Varbind,
-	varbindError,
+	ICredentialDataDecryptedObject,
+	IExecuteFunctions,
+	ILoadOptionsFunctions,
+	NodeOperationError,
+} from 'n8n-workflow';
+import {
+	AuthProtocols,
 	createModuleStore,
+	createSession,
+	createV3Session,
+	isVarbindError,
 	OidFormat,
+	PrivProtocols,
+	SecurityLevel,
+	type User,
+	type Varbind,
+	varbindError,
+	Version1,
+	Version2c,
+	Version3,
 } from 'net-snmp';
 
-export function connect(ip: string, port: number) {
-	return createSession(ip, 'private', {
-		port,
-	});
+export async function connect(
+	this: IExecuteFunctions | ILoadOptionsFunctions,
+	ip: string,
+	port: number,
+) {
+	let version: string = 'v2c';
+	let snmpCred: string | User = 'public';
+
+	let cred: ICredentialDataDecryptedObject | undefined;
+	try {
+		cred = (await this.getCredentials('snmp')) as ICredentialDataDecryptedObject;
+		version = cred.version as string;
+		switch (version) {
+			case 'v1':
+			case 'v2c':
+				snmpCred = cred.community as string;
+				break;
+			case 'v3':
+				snmpCred = {
+					name: cred.user as string,
+					level: SecurityLevel[cred.level as keyof typeof SecurityLevel],
+					authProtocol: AuthProtocols[cred.authProtocol as keyof typeof AuthProtocols],
+					authKey: cred.authKey as string,
+					privProtocol: PrivProtocols[cred.privProtocol as keyof typeof PrivProtocols],
+					privKey: cred.privKey as string,
+				};
+		}
+	} catch {
+		// just let this continue, there are defaults anyway
+	}
+
+	switch (version) {
+		case 'v1':
+		case 'v2c':
+			return createSession(ip, snmpCred as string, {
+				port,
+				version: version === 'v1' ? Version1 : Version2c,
+			});
+		case 'v3':
+			return createV3Session(ip, snmpCred as User, {
+				port,
+				version: Version3,
+			});
+		default:
+			throw new NodeOperationError(
+				this.getNode(),
+				"Unexpected error, version isn't v1 or v2c or v3!",
+			);
+	}
 }
 
 export function getSingle(this: IExecuteFunctions | ILoadOptionsFunctions, varbind: Varbind) {

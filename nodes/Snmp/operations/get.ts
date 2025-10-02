@@ -70,7 +70,7 @@ export async function get(this: IExecuteFunctions, itemIndex: number) {
 	const ip = this.getNodeParameter('address', itemIndex, '') as string;
 	const port = this.getNodeParameter('port', itemIndex, 161) as number;
 	this.logger.debug('get', { oids });
-	const session = connect.call(this, ip, port);
+	const session = await connect.call(this, ip, port);
 
 	const varbinds = await promisify(session.get).call(
 		session,

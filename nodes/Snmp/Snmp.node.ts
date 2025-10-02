@@ -23,6 +23,13 @@ export class Snmp implements INodeType {
 		inputs: [NodeConnectionTypes.Main],
 		outputs: [NodeConnectionTypes.Main],
 		usableAsTool: true,
+		credentials: [
+			{
+				// eslint-disable-next-line n8n-nodes-base/node-class-description-credentials-name-unsuffixed
+				name: 'snmp',
+				required: false,
+			},
+		],
 		properties: [
 			{
 				displayName: 'IP Address',
@@ -74,11 +81,11 @@ export class Snmp implements INodeType {
 		],
 	};
 
-	methods: INodeType["methods"] = {
+	methods: INodeType['methods'] = {
 		listSearch: {
-			listOIDsInDefaultTree: listOIDsInDefaultTree
-		}
-	}
+			listOIDsInDefaultTree: listOIDsInDefaultTree,
+		},
+	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items: INodeExecutionData[] = [];
@@ -96,7 +103,15 @@ export class Snmp implements INodeType {
 					);
 					break;
 				case 'get':
-					items.push(...(await get.call(this, itemIndex)).map((i) => ({ json: i })));
+					items.push(
+						...(await get.call(this, itemIndex)).map((i) => ({
+							json: i,
+							pairedItem: { item: itemIndex },
+						})),
+					);
+					break;
+				case 'set':
+					// TODO
 					break;
 			}
 			// } catch (error) {

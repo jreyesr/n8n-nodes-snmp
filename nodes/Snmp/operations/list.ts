@@ -87,8 +87,7 @@ export async function listOIDs(
 		}
 	};
 
-	// Set numRepetitions to essentially infinite, otherwise it'll return no more than 500 entries???
-	session.subtree(startOID, Number.MAX_SAFE_INTEGER, feedCb, doneCb);
+	session.subtree(startOID, feedCb, doneCb);
 
 	return promise;
 }
@@ -98,7 +97,7 @@ export async function list(this: IExecuteFunctions, itemIndex: number) {
 	const ip = this.getNodeParameter('address', itemIndex, '') as string;
 	const port = this.getNodeParameter('port', itemIndex, 161) as number;
 	this.logger.debug('list', { rootOID: startOID });
-	const session = connect.call(this, ip, port);
+	const session = await connect.call(this, ip, port);
 
 	return listOIDs.call(this, session, startOID);
 }
