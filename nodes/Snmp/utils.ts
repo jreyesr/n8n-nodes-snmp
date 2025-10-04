@@ -16,6 +16,7 @@ import {
 	type User,
 	type Varbind,
 	varbindError,
+	VarbindValue,
 	Version1,
 	Version2c,
 	Version3,
@@ -79,17 +80,23 @@ export function getSingle(this: IExecuteFunctions | ILoadOptionsFunctions, varbi
 	return getVal(varbind);
 }
 
-export function getVal(varbind: Varbind) {
-	if (varbind.value === null || varbind.value === undefined) {
+function isVarbind(val: Varbind | VarbindValue): val is Varbind {
+	return (val as Varbind).oid !== undefined;
+}
+
+export function getVal(varbind: Varbind | VarbindValue) {
+	if (isVarbind(varbind)) varbind = varbind.value;
+
+	if (varbind === null || varbind === undefined) {
 		return null;
 	}
-	if (Buffer.isBuffer(varbind.value)) {
-		return varbind.value.toString();
+	if (Buffer.isBuffer(varbind)) {
+		return varbind.toString();
 	}
-	if (typeof varbind.value === 'bigint') {
-		return varbind.value.toString();
+	if (typeof varbind === 'bigint') {
+		return varbind.toString();
 	}
-	return varbind.value;
+	return varbind;
 }
 
 const moduleStore = createModuleStore();
