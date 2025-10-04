@@ -42,15 +42,37 @@ multiple OIDs:
 
 ![a screenshot of the SNMP node showing the Read OIDs operation with an array on the field for the OIDs to read](images/get_array.png)
 
+### Get Table
+
+There are parts of MIB trees that contain table data (two-dimensional lists),
+in [column-major order](https://en.wikipedia.org/wiki/Row-_and_column-major_order) (all the values for column A first,
+then all the values for column B, and so on). For example, `1.3.6.1.2.1.2.2`
+is [the interfaces table](https://oidref.com/1.3.6.1.2.1.2.2), comprised of all the values of the form
+`<BASE_OID>.1.<COLUMN_INDEX>.<ENTRY_INDEX>`:
+
+| ↓ ENTRY_INDEX | COLUMN_INDEX = 1 = ifIndex | COLUMN_INDEX = 2 = ifDescr | COLUMN_INDEX = 3 = ifType | ... |
+|---------------|----------------------------|----------------------------|---------------------------|-----|
+| 1             | 1                          | lo                         | 24                        | ... |
+| 2             | 2                          | eth1                       | 6                         | ... |
+| ...           |                            |                            |                           |     |
+
+To read a table, provide the OID under which the table is stored. _Do not_ include the final `.1` that is typically (
+always?) appended to it. This operation will return multiple output items, all with the same shape/schema (dictated by
+the fields returned by the SNMP agent while listing all children of the Base OID)
+
 ## Credentials
 
-_If users need to authenticate with the app/service, provide details here. You should include prerequisites (such as
-signing up with the service), available authentication methods, and how to set them up._
+This node supports the authentication methods of SNMP v1, v2c (both just use a Community Name) and v3 (username and,
+optionally, separate passwords for message authentication and encryption).
+
+The node can also be used without a credential, in which case it'll default to v2c with the community `public`. To use
+v1 or v3, provide a credential (which is necessary in any case for v3 because there isn't a v3 equivalent to the
+`public` community that is very widely used in v1/v2c).
 
 ## Compatibility
 
-_State the minimum n8n version, as well as which versions you test against. You can also include any known version
-incompatibility issues._
+This node has been developed in N8N v1.111. It should work on somewhat older versions (released a few months ago before
+2025-09). Please [open an issue](https://github.com/jreyesr/n8n-nodes-snmp/issues) if you encounter any problems.
 
 ## Usage
 
@@ -62,9 +84,8 @@ you can link to the [Try it out](https://docs.n8n.io/try-it-out/) documentation 
 ## Resources
 
 * [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
-* _Link to app/service documentation._
+* [The underlying library used](https://www.npmjs.com/package/net-snmp)
 
 ## Version history
 
-_This is another optional section. If your node has multiple versions, include a short description of available versions
-and what changed, as well as any compatibility impact._
+See [the CHANGELOG.md file](./CHANGELOG.md)
