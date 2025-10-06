@@ -1,6 +1,7 @@
 import { IExecuteFunctions, type INodeProperties } from 'n8n-workflow';
 import { connect, getSingle } from '../utils';
 import { promisify } from 'node:util';
+import { type Varbind } from 'net-snmp';
 
 export const properties: INodeProperties[] = [
 	{
@@ -65,8 +66,17 @@ export const properties: INodeProperties[] = [
 	},
 ];
 
+export function varbindsToExecutionData(this: IExecuteFunctions, varbinds?: Varbind[]) {
+	return (varbinds ?? []).map((vb) => ({
+		oid: vb.oid,
+		value: getSingle.call(this, vb),
+	}));
+}
+
 export async function get(this: IExecuteFunctions, itemIndex: number) {
-	const oids = this.getNodeParameter('oids.item', itemIndex, []) as { oid: {value: string | string[]} }[];
+	const oids = this.getNodeParameter('oids.item', itemIndex, []) as {
+		oid: { value: string | string[] };
+	}[];
 	const ip = this.getNodeParameter('address', itemIndex, '') as string;
 	const port = this.getNodeParameter('port', itemIndex, 161) as number;
 	this.logger.debug('get', { oids });
@@ -77,8 +87,5 @@ export async function get(this: IExecuteFunctions, itemIndex: number) {
 		// NOTE: .flatMap() instead of .map() so it naturally handles expressions that resolve to arrays
 		oids.flatMap((i) => i.oid.value),
 	);
-	return (varbinds ?? []).map((vb) => ({
-		oid: vb.oid,
-		value: getSingle.call(this, vb),
-	}));
+	return varbindsToExecutionData.call(this, varbinds);
 }

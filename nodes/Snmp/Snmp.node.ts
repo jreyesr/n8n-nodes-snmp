@@ -8,6 +8,8 @@ import { NodeConnectionTypes } from 'n8n-workflow';
 import { list, options as listOptions } from './operations/list';
 import { get, properties as getProperties } from './operations/get';
 import { getTable, properties as getTableProperties } from './operations/getTable';
+import { write, properties as writeProperties } from './operations/write';
+
 import { listOIDsInDefaultTree } from './methods';
 
 export class Snmp implements INodeType {
@@ -74,10 +76,17 @@ export class Snmp implements INodeType {
 						action: 'Get table of values',
 						description: 'Retrieve the values of several list-type OIDs, formatted as a table',
 					},
+					{
+						name: 'Write',
+						value: 'write',
+						action: 'Write to OID',
+						description: 'Write a value to an OID',
+					},
 				],
 			},
 			...getProperties,
 			...getTableProperties,
+			...writeProperties,
 			{
 				displayName: 'Options',
 				name: 'options',
@@ -126,8 +135,13 @@ export class Snmp implements INodeType {
 						})),
 					);
 					break;
-				case 'set':
-					// TODO
+				case 'write':
+					items.push(
+						...(await write.call(this, itemIndex)).map((i) => ({
+							json: i,
+							pairedItem: { item: itemIndex },
+						})),
+					);
 					break;
 			}
 			// } catch (error) {

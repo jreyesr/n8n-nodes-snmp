@@ -116,6 +116,7 @@ export function getName(oid: string): string | null {
 			const name = moduleStore.translate(prefix.join('.'), OidFormat.path);
 			return [...name.split('.'), ...suffix].join('.');
 		} catch {
+			// an exception means that prefix wasn't found on translation table, so try to chop the last component off and retry
 			// shuffle prefix[-1] to start of suffix
 			// e.g. prefix=[1, 3, 6, 1, 2, 1, 0], suffix=[]
 			// =>
