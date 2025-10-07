@@ -1,8 +1,7 @@
 import { IExecuteFunctions, INodeProperties, NodeParameterValue } from 'n8n-workflow';
-import { connect } from '../utils';
+import { connect, varbindsToExecutionData } from '../utils';
 import { promisify } from 'node:util';
 import { Varbind } from 'net-snmp';
-import { varbindsToExecutionData } from './get';
 
 export const properties: INodeProperties[] = [
 	{
