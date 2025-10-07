@@ -1,7 +1,6 @@
 import { IExecuteFunctions, type INodeProperties } from 'n8n-workflow';
-import { connect, getSingle } from '../utils';
+import { connect, varbindsToExecutionData } from '../utils';
 import { promisify } from 'node:util';
-import { type Varbind } from 'net-snmp';
 
 export const properties: INodeProperties[] = [
 	{
@@ -65,13 +64,6 @@ export const properties: INodeProperties[] = [
 		},
 	},
 ];
-
-export function varbindsToExecutionData(this: IExecuteFunctions, varbinds?: Varbind[]) {
-	return (varbinds ?? []).map((vb) => ({
-		oid: vb.oid,
-		value: getSingle.call(this, vb),
-	}));
-}
 
 export async function get(this: IExecuteFunctions, itemIndex: number) {
 	const oids = this.getNodeParameter('oids.item', itemIndex, []) as {

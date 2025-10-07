@@ -1,28 +1,10 @@
 import type { IExecuteFunctions, ILoadOptionsFunctions, INodeProperties } from 'n8n-workflow';
-import { connect, getName, getSingle } from '../utils';
-import { type Varbind, ObjectType, Session } from 'net-snmp';
+import { connect, getSingle, varbindsToDetailedExecutionData } from '../utils';
+import { type Varbind, Session } from 'net-snmp';
 
 export const properties: INodeProperties[] = [];
 
 export const SNMPWALK_ROOT_OID = '1.3.6.1.2.1'; // SNMPv2-SMI::mib-2
-const SNMP_TYPE_NAMES: { [k in ObjectType]?: string } = {
-	[ObjectType.Boolean]: 'Boolean',
-	[ObjectType.Integer]: 'Integer',
-	[ObjectType.BitString]: 'Bit String',
-	[ObjectType.OctetString]: 'String',
-	[ObjectType.Null]: 'Null',
-	[ObjectType.OID]: 'OID',
-	[ObjectType.IpAddress]: 'IP Address',
-	[ObjectType.Counter]: 'Counter',
-	[ObjectType.Gauge]: 'Gauge',
-	[ObjectType.TimeTicks]: 'Time Ticks',
-	[ObjectType.Opaque]: 'Opaque',
-	[ObjectType.Counter64]: 'Counter64',
-	// the three below shouldn't appear on actual entries, but just in case
-	[ObjectType.NoSuchObject]: 'No Such Object',
-	[ObjectType.NoSuchInstance]: 'No Such Instance',
-	[ObjectType.EndOfMibView]: 'End Of MIB',
-};
 
 export const options: INodeProperties[] = [
 	{
@@ -74,14 +56,7 @@ export async function listOIDs(
 			end: varbinds[varbinds.length - 1].oid,
 		});
 		try {
-			for (const vb of varbinds) {
-				finalValues.push({
-					oid: vb.oid,
-					name: getName(vb.oid) ?? vb.oid,
-					type: { numeric: vb.type, name: SNMP_TYPE_NAMES[vb.type ?? -1] ?? 'UNKNOWN' },
-					value: getSingle.call(this, vb), // may throw NodeOperationError
-				});
-			}
+			finalValues.push(...varbindsToDetailedExecutionData.call(this, varbinds));
 		} catch (e) {
 			reject(e);
 		}
