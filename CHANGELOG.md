@@ -1,3 +1,8 @@
+## v0.0.4 (TODO)
+
+* Add Write operation to perform changes on managed devices
+* Add SNMP Trap trigger to receive Trap (v1/v2) and Inform requests from agents
+
 ## v0.0.3 (2025-10-04)
 
 * Add the Read Table operation to read subtrees like `BASE.1.COLUMN.ENTRY`, in tabular form

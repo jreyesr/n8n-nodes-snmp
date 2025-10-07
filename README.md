@@ -60,6 +60,39 @@ To read a table, provide the OID under which the table is stored. _Do not_ inclu
 always?) appended to it. This operation will return multiple output items, all with the same shape/schema (dictated by
 the fields returned by the SNMP agent while listing all children of the Base OID)
 
+### Write
+
+It's possible to write values back to the SNMP agent. Which OIDs are writable and the data types of each depends on the
+exact device that is being managed.
+
+**NOTE:** For now, please note that data types are slightly awkward to handle. If you try to write to an OID that
+accepts integers, for example, you can't just write `1` in the Value field, because it'll be interpreted as a string
+with a single character. To force an actual number, switch the Value field to Expression mode and write `{{ 1 }}`, which
+_will_ be treated as a proper number. String fields can be written directly (or as expressions too, for variable values)
+
+## Trigger
+
+### Trap Trigger
+
+The SNMP Trap Trigger node opens a UDP port and listens to SNMP Traps (either v1 or v2) and Informs. Traps are
+fire-and-forget and the sending agent won't have confirmation of their receipt, whereas Informs will be acknowledged by
+N8N.
+
+To use this node, optionally provide a credential (which will be used to check all incoming requests, so they must have
+a certain community name or user info) and specify the port that the trigger will listen on. Please note that this port
+must not already be in use because it'll be bound exclusively by the trigger, so you can't have multiple triggers (
+whether on the same WF or on different WFs) using the same port. For the same reason, it isn't possible to run the WF
+manually while it's active, because in that case both the running WF and the manual execution would try to bind to the
+same port. To test the WF manually, deactivate it first, then test it, and then activate it again. Alternatively,
+manually pin data on the trigger, or, if you have access to it, use
+the [Debug in editor](https://docs.n8n.io/workflows/executions/debug/) button.
+
+If you're deploying N8N in Docker, you may need to allow the container to bind to the desired ports by using
+Docker's [port forwarding features](https://docs.docker.com/get-started/docker-concepts/running-containers/publishing-ports/) (
+or use a range of ports,
+as [some Dockerized FTP servers](https://github.com/garethflowers/docker-ftp-server?tab=readme-ov-file#-via-docker-run)
+suggest doing)
+
 ## Credentials
 
 This node supports the authentication methods of SNMP v1, v2c (both just use a Community Name) and v3 (username and,
