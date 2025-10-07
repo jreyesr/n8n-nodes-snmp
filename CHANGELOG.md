@@ -1,4 +1,4 @@
-## v0.0.4 (TODO)
+## v0.0.4 (2025-10-06)
 
 * Add Write operation to perform changes on managed devices
 * Add SNMP Trap trigger to receive Trap (v1/v2) and Inform requests from agents
