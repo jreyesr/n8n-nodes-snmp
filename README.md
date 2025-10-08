@@ -7,12 +7,11 @@ switches), as well as other network-connected devices such as servers, IP phones
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
-[Installation](#installation)
-[Operations](#operations)
-[Credentials](#credentials)
-[Compatibility](#compatibility)
-[Usage](#usage)
-[Resources](#resources)
+[Installation](#installation)  
+[Operations](#operations)  
+[Credentials](#credentials)  
+[Compatibility](#compatibility)  
+[Resources](#resources)  
 [Version history](#version-history)
 
 ## Installation
@@ -106,13 +105,6 @@ v1 or v3, provide a credential (which is necessary in any case for v3 because th
 
 This node has been developed in N8N v1.111. It should work on somewhat older versions (released a few months ago before
 2025-09). Please [open an issue](https://github.com/jreyesr/n8n-nodes-snmp/issues) if you encounter any problems.
-
-## Usage
-
-_This is an optional section. Use it to help users with any difficult or confusing aspects of the node._
-
-_By the time users are looking for community nodes, they probably already know n8n basics. But if you expect new users,
-you can link to the [Try it out](https://docs.n8n.io/try-it-out/) documentation to help them get started._
 
 ## Resources
 

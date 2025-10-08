@@ -174,6 +174,7 @@ export function varbindsToExecutionData(
 ) {
 	return (varbinds ?? []).map((vb) => ({
 		oid: vb.oid,
+		name: getName(vb.oid),
 		value: getSingle.call(this, vb),
 	}));
 }
@@ -259,7 +260,7 @@ const moduleStore = createModuleStore();
  * by the remaining (unknown) nodes
  * @example
  * // 1.3.6.1.2.1.1.1 is sysDescr, and its actual value (because it's a scalar) is .0 inside that path
- * getName("1.3.6.1.2.1.1.1.0") => ".0"
+ * getName("1.3.6.1.2.1.1.1.0") => "iso.org.dod.internet.mgmt.mib-2.system.sysDescr.0	"
  */
 export function getName(oid: string): string | null {
 	const prefix = oid.split('.'),
