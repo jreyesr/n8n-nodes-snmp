@@ -29,7 +29,7 @@ export class Snmp implements INodeType {
 		credentials: [
 			{
 				// eslint-disable-next-line n8n-nodes-base/node-class-description-credentials-name-unsuffixed
-				name: 'snmp',
+				name: 'Snmp',
 				required: false,
 			},
 		],
