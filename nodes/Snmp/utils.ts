@@ -42,7 +42,7 @@ async function getCred(
 	let version: Versions;
 
 	try {
-		const cred = (await this.getCredentials('snmp')) as ICredentialDataDecryptedObject;
+		const cred = (await this.getCredentials('Snmp')) as ICredentialDataDecryptedObject;
 		version = cred.version as Versions;
 		switch (version) {
 			case 'v1':
