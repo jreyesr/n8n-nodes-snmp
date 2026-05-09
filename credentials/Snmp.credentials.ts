@@ -1,12 +1,14 @@
 import type { ICredentialType, INodeProperties } from 'n8n-workflow';
 
-// eslint-disable-next-line n8n-nodes-base/cred-class-name-unsuffixed
+// eslint-disable-next-line n8n-nodes-base/cred-class-name-unsuffixed, @n8n/community-nodes/credential-test-required
 export class Snmp implements ICredentialType {
 	// eslint-disable-next-line n8n-nodes-base/cred-class-field-name-unsuffixed
 	name = 'snmp';
 
 	// eslint-disable-next-line n8n-nodes-base/cred-class-field-display-name-missing-api
 	displayName = 'SNMP';
+
+	icon = 'file:snmp.svg' as const;
 
 	documentationUrl =
 		'https://www.npmjs.com/package/net-snmp#snmpcreatesession-target-community-options';

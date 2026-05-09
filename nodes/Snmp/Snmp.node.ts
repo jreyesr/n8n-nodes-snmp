@@ -4,7 +4,7 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionTypes } from 'n8n-workflow';
+import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 import { list, options as listOptions } from './operations/list';
 import { get, properties as getProperties } from './operations/get';
 import { getTable, properties as getTableProperties } from './operations/getTable';
@@ -16,10 +16,11 @@ export class Snmp implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'SNMP',
 		name: 'snmp',
-		icon: { light: 'file:snmp.svg', dark: 'file:snmp.svg' },
+		icon: 'file:snmp.svg',
 		group: ['input'],
 		version: 1,
-		description: 'SNMP Node',
+		subtitle: '={{$parameter["operation"]}}',
+		description: 'Read and write values from SNMP-enabled devices',
 		defaults: {
 			name: 'SNMP',
 		},
@@ -55,14 +56,14 @@ export class Snmp implements INodeType {
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
-				default: 'listOIDs',
+				default: 'get',
 				noDataExpression: true,
 				options: [
 					{
-						name: 'List OIDs',
-						value: 'listOIDs',
-						action: 'List OIDs', // eslint-disable-line n8n-nodes-base/node-param-operation-option-action-miscased
-						description: 'Walks the SNMP tree and returns all descendant entries',
+						name: 'Get Table',
+						value: 'getTable',
+						action: 'Get table of values',
+						description: 'Retrieve the values of several list-type OIDs, formatted as a table',
 					},
 					{
 						name: 'Get Values',
@@ -71,10 +72,10 @@ export class Snmp implements INodeType {
 						description: 'Retrieve the values of one or several OIDs',
 					},
 					{
-						name: 'Get Table',
-						value: 'getTable',
-						action: 'Get table of values',
-						description: 'Retrieve the values of several list-type OIDs, formatted as a table',
+						name: 'List OIDs',
+						value: 'listOIDs',
+						action: 'List OIDs', // eslint-disable-line n8n-nodes-base/node-param-operation-option-action-miscased
+						description: 'Walks the SNMP tree and returns all descendant entries',
 					},
 					{
 						name: 'Write',
@@ -106,57 +107,56 @@ export class Snmp implements INodeType {
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items: INodeExecutionData[] = [];
-		const operation = this.getNodeParameter('operation', 0, 'listOIDs') as string;
+		// operation is the same across all items — read once from item 0
+		const operation = this.getNodeParameter('operation', 0, 'get') as string;
 
 		for (let itemIndex = 0; itemIndex < this.getInputData().length; itemIndex++) {
-			// try {
-			switch (operation) {
-				case 'listOIDs':
-					items.push(
-						...(await list.call(this, itemIndex)).map((e) => ({
-							json: e,
-							pairedItem: { item: itemIndex },
-						})),
-					);
-					break;
-				case 'get':
-					items.push(
-						...(await get.call(this, itemIndex)).map((i) => ({
-							json: i,
-							pairedItem: { item: itemIndex },
-						})),
-					);
-					break;
-				case 'getTable':
-					items.push(
-						...(await getTable.call(this, itemIndex)).map((i) => ({
-							json: i,
-							pairedItem: { item: itemIndex },
-						})),
-					);
-					break;
-				case 'write':
-					items.push(
-						...(await write.call(this, itemIndex)).map((i) => ({
-							json: i,
-							pairedItem: { item: itemIndex },
-						})),
-					);
-					break;
+			try {
+				switch (operation) {
+					case 'listOIDs':
+						items.push(
+							...(await list.call(this, itemIndex)).map((e) => ({
+								json: e,
+								pairedItem: { item: itemIndex },
+							})),
+						);
+						break;
+					case 'get':
+						items.push(
+							...(await get.call(this, itemIndex)).map((i) => ({
+								json: i,
+								pairedItem: { item: itemIndex },
+							})),
+						);
+						break;
+					case 'getTable':
+						items.push(
+							...(await getTable.call(this, itemIndex)).map((i) => ({
+								json: i,
+								pairedItem: { item: itemIndex },
+							})),
+						);
+						break;
+					case 'write':
+						items.push(
+							...(await write.call(this, itemIndex)).map((i) => ({
+								json: i,
+								pairedItem: { item: itemIndex },
+							})),
+						);
+						break;
+				}
+			} catch (error) {
+				if (this.continueOnFail()) {
+					items.push({
+						json: this.getInputData()[itemIndex].json,
+						error,
+						pairedItem: itemIndex,
+					});
+				} else {
+					throw new NodeOperationError(this.getNode(), error as Error, { itemIndex });
+				}
 			}
-			// } catch (error) {
-			// 	if (this.continueOnFail()) {
-			// 		items.push({ json: this.getInputData(itemIndex)[0].json, error, pairedItem: itemIndex });
-			// 	} else {
-			// 		if (error.context) {
-			// 			error.context.itemIndex = itemIndex;
-			// 			throw error;
-			// 		}
-			// 		throw new NodeOperationError(this.getNode(), error, {
-			// 			itemIndex,
-			// 		});
-			// 	}
-			// }
 		}
 
 		return [items];

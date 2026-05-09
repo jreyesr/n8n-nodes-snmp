@@ -39,35 +39,33 @@ async function getCred(
 	  }
 	| { version: 'v3'; cred: User }
 > {
-	let version: Versions;
-
+	let rawCred: ICredentialDataDecryptedObject;
 	try {
-		const cred = (await this.getCredentials('snmp')) as ICredentialDataDecryptedObject;
-		version = cred.version as Versions;
-		switch (version) {
-			case 'v1':
-			case 'v2c':
-				return {
-					version,
-					cred: cred.community as string,
-				};
-			case 'v3':
-				return {
-					version: 'v3',
-					cred: {
-						name: cred.user as string,
-						level: SecurityLevel[cred.level as keyof typeof SecurityLevel],
-						authProtocol: AuthProtocols[cred.authProtocol as keyof typeof AuthProtocols],
-						authKey: cred.authKey as string,
-						privProtocol: PrivProtocols[cred.privProtocol as keyof typeof PrivProtocols],
-						privKey: cred.privKey as string,
-					},
-				};
-		}
+		rawCred = (await this.getCredentials('snmp')) as ICredentialDataDecryptedObject;
 	} catch {
-		return {
-			version: 'v2c',
-		};
+		// No credentials configured — use unauthenticated v2c
+		return { version: 'v2c' };
+	}
+
+	const version = rawCred.version as Versions;
+	switch (version) {
+		case 'v1':
+		case 'v2c':
+			return { version, cred: rawCred.community as string };
+		case 'v3':
+			return {
+				version: 'v3',
+				cred: {
+					name: rawCred.user as string,
+					level: SecurityLevel[rawCred.level as keyof typeof SecurityLevel],
+					authProtocol: AuthProtocols[rawCred.authProtocol as keyof typeof AuthProtocols],
+					authKey: rawCred.authKey as string,
+					privProtocol: PrivProtocols[rawCred.privProtocol as keyof typeof PrivProtocols],
+					privKey: rawCred.privKey as string,
+				},
+			};
+		default:
+			throw new NodeOperationError(this.getNode(), `Unknown SNMP version: ${String(version)}`);
 	}
 }
 
@@ -111,7 +109,7 @@ declare module 'net-snmp' {
 		pdu: { type: number; id: number; varbinds: Varbind[] };
 	}
 
-	export type ReceiverCallback = (error: Error, notification: ReceiverNotification) => void;
+	export type ReceiverCallback = (error: Error | null, notification: ReceiverNotification) => void;
 
 	export interface ReceiverOptions {
 		port?: number;
@@ -123,7 +121,16 @@ declare module 'net-snmp' {
 		sockets?: { transport: string; address: string; port: number }[];
 	}
 
-	export function createReceiver(options: ReceiverCallback, callback: ReceiverCallback): Receiver;
+	export function createReceiver(options: ReceiverOptions, callback: ReceiverCallback): Receiver;
+
+	interface Session {
+		table(oid: string, callback: (error: Error | null, table: TableData) => void): void;
+		table(
+			oid: string,
+			maxRepetitions: number,
+			callback: (error: Error | null, table: TableData) => void,
+		): void;
+	}
 
 	export class Receiver {
 		getAuthorizer(): Authorizer;
@@ -175,6 +182,7 @@ export function varbindsToExecutionData(
 	return (varbinds ?? []).map((vb) => ({
 		oid: vb.oid,
 		name: getName(vb.oid),
+		type: typeToDetailed(vb.type),
 		value: getSingle.call(this, vb),
 	}));
 }
@@ -211,7 +219,7 @@ const SNMP_TYPE_NAMES: { [k in ObjectType | PduType]?: string } = {
 	[PduType.Report]: 'Report',
 };
 
-export function typeToDetailed(type?: ObjectType) {
+export function typeToDetailed(type?: ObjectType | PduType) {
 	return { numeric: type, name: SNMP_TYPE_NAMES[type ?? -1] ?? 'UNKNOWN' };
 }
 
@@ -270,23 +278,10 @@ export function getName(oid: string): string | null {
 			const name = moduleStore.translate(prefix.join('.'), OidFormat.path);
 			return [...name.split('.'), ...suffix].join('.');
 		} catch {
-			// an exception means that prefix wasn't found on translation table, so try to chop the last component off and retry
-			// shuffle prefix[-1] to start of suffix
-			// e.g. prefix=[1, 3, 6, 1, 2, 1, 0], suffix=[]
-			// =>
-			// prefix=[1, 3, 6, 1, 2, 1], suffix=[0]
+			// Prefix not in translation table — chop the last component and retry.
+			// e.g. prefix=[1, 3, 6, 1, 2, 1, 0], suffix=[] → prefix=[1, 3, 6, 1, 2, 1], suffix=[0]
 			suffix.splice(0, 0, prefix.pop()!);
 		}
 	}
-	try {
-		return moduleStore.translate(oid, OidFormat.path);
-	} catch {
-		try {
-			// as a special case, try to find the previous path
-			const exceptLastComponent = oid.split('.').slice(0, -1).join('.');
-			return moduleStore.translate(exceptLastComponent, OidFormat.path);
-		} catch {
-			return null; // give up
-		}
-	}
+	return null;
 }

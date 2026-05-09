@@ -73,6 +73,9 @@ export async function list(this: IExecuteFunctions, itemIndex: number) {
 	const port = this.getNodeParameter('port', itemIndex, 161) as number;
 	this.logger.debug('list', { rootOID: startOID });
 	const session = await connect.call(this, ip, port);
-
-	return listOIDs.call(this, session, startOID);
+	try {
+		return await listOIDs.call(this, session, startOID);
+	} finally {
+		session.close();
+	}
 }

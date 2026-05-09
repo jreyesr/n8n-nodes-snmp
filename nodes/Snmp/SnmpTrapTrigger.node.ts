@@ -8,16 +8,18 @@ import {
 import { connectForTrap, typeToDetailed, varbindsToDetailedExecutionData } from './utils';
 import { ReceiverNotification } from 'net-snmp';
 
+// eslint-disable-next-line @n8n/community-nodes/node-usable-as-tool
 export class SnmpTrapTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'SNMP Trap Trigger',
 		name: 'snmpTrapTrigger',
-		icon: { light: 'file:snmp.svg', dark: 'file:snmp.svg' },
+		icon: 'file:snmp.svg',
 		group: ['trigger'],
 		version: 1,
-		description: 'SNMP Trap Trigger',
+		subtitle: '=UDP port {{$parameter["port"]}}',
+		description: 'Receive SNMP traps (v1, v2c, v3) on a local UDP port',
 		defaults: {
-			name: 'Trap Trigger',
+			name: 'SNMP Trap',
 		},
 		inputs: [],
 		outputs: [NodeConnectionTypes.Main],
@@ -75,20 +77,25 @@ export class SnmpTrapTrigger implements INodeType {
 			]);
 		};
 
-		const manualTriggerFunction = async () =>
-			// eslint-disable-next-line no-async-promise-executor
-			await new Promise<void>(async (resolve) => {
-				session = await connectForTrap.call(this, port, (error, notification) => {
-					if (error) {
-						this.emitError(error);
-						// Apparently closeFunction() isn't called when emitError is called, so do it by hand here
-						session.close();
-					} else {
-						onMessage(notification);
-					}
-					resolve();
-				});
+		const manualTriggerFunction = async () => {
+			let resolveFirstMessage: () => void;
+			const firstMessage = new Promise<void>((resolve) => {
+				resolveFirstMessage = resolve;
 			});
+
+			session = await connectForTrap.call(this, port, (error, notification) => {
+				if (error) {
+					this.emitError(error);
+					// closeFunction() isn't called when emitError is called, so close manually
+					session.close();
+				} else {
+					onMessage(notification);
+				}
+				resolveFirstMessage();
+			});
+
+			await firstMessage;
+		};
 
 		if (this.getMode() === 'trigger') {
 			session = await connectForTrap.call(this, port, (error, notification) => {
@@ -105,7 +112,11 @@ export class SnmpTrapTrigger implements INodeType {
 		}
 
 		const closeFunction = async () => {
-			session.close();
+			try {
+				session.close();
+			} catch {
+				// Session may have already been closed (e.g. on emitError in manual mode)
+			}
 		};
 
 		return {

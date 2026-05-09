@@ -73,11 +73,14 @@ export async function get(this: IExecuteFunctions, itemIndex: number) {
 	const port = this.getNodeParameter('port', itemIndex, 161) as number;
 	this.logger.debug('get', { oids });
 	const session = await connect.call(this, ip, port);
-
-	const varbinds = await promisify(session.get).call(
-		session,
-		// NOTE: .flatMap() instead of .map() so it naturally handles expressions that resolve to arrays
-		oids.flatMap((i) => i.oid.value),
-	);
-	return varbindsToExecutionData.call(this, varbinds);
+	try {
+		const varbinds = await promisify(session.get).call(
+			session,
+			// NOTE: .flatMap() instead of .map() so it naturally handles expressions that resolve to arrays
+			oids.flatMap((i) => i.oid.value),
+		);
+		return varbindsToExecutionData.call(this, varbinds);
+	} finally {
+		session.close();
+	}
 }
